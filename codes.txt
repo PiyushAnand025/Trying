@@ -1,0 +1,160 @@
+<style type="text/css">
+    .usercard {
+        padding: 10px;
+        margin: 10px 20px;
+        border: 1px solid #c7cfb7;
+        width: 30%;
+        display: inline-block;
+        transition: 0.3s ease-in;
+        border-radius:5px;
+        text-align: center;
+    }
+
+    .usercard:hover {
+        -webkit-box-shadow: 0px 2px 9px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 0px 2px 9px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 0px 2px 9px 0px rgba(0, 0, 0, 0.75);
+        transition: 0.3s ease-in;
+    }
+
+    .name {
+        line-height: normal;
+        margin: 10px 0 0px !important;
+        
+    }
+    .button {
+         background-color: #A7D7C5;  
+         border-radius:5px;
+         color: white;
+         padding: .5em;
+         text-decoration: none;
+         margin:20px;
+         text-align: right;
+    }
+
+    .button:focus,
+    .button:hover {
+        background-color: #DFDDDD;
+        color: White;
+    }
+    .buton:focus,
+    .buton:hover {
+        background-color: #FFA000;
+        color: White;
+    }
+  
+
+</style>
+
+<?php
+
+function display($x) 
+{
+	$user =get_user_by('id',$x);
+        $zz=get_current_user_id();
+        if($user->roles[0]=='wcfm_vendor' and $user->ID !=$zz)
+	{
+	   $spec=get_user_meta ( $user->ID,'clinical-speciality');
+           $user_info = get_userdata($user->ID);
+           $s=$user_info->user_nicename;
+           $fn=$user_info->user_login;
+           for ($xx = 0; $xx <= strlen($fn); $xx++) {
+		if($fn[$xx]==' ')
+		{
+       			$fn[$xx]='-';
+                }
+           }
+           $img_url= get_avatar_url( $user->ID ,120);
+           echo '<div class="usercard">
+           <img  src=" '.$img_url.' " alt=" ' . $user->display_name . ' ">',
+           '<h4 class="name">' . $user->display_name . '</h4>',
+           '<p>' . $spec[0] . '</p>',
+           '<a href="https://www.thehealthlync.com/onlineclinic/'.$s.'/" class="button" 
+           role="button">Contact Clinic</a>',
+           '<a href="https://www.thehealthlync.com/product/telehealth-consult-'.$fn.'/"
+           class="button buton" 
+           role="button">Book an appointment</a>',
+           '</div>';
+        }
+}
+
+$current_user = wp_get_current_user();
+//$current_user =get_user_by('id',289);
+if($current_user->roles[0]=='administrator')
+{
+	echo "You are an administrator";
+}
+else
+{
+	$all_users=get_users();
+	$c=-1;
+	foreach($all_users as $user)
+	{
+      		$x=get_user_meta ($user->ID,'points_details');
+      		$Y=$x[0][reference_details];
+      		foreach($Y as $y)
+      		{
+                      
+             		if($y[refered_user] == $current_user->ID)
+             		{
+                   		$c=($user->ID);
+                                
+             		}
+                        if($c>-1)
+      		        {
+            		      break;
+      		        }
+      		}
+      		if($c>-1)
+      		{
+            		break;
+      		}
+	}
+	//echo $c;
+	$array1=array();
+	$f=0;
+        //echo $c;
+        //echo "<br>";
+	if($c>-1)
+        {
+		$f=1;
+		display($c);
+		$x=get_user_meta ($c,'points_details');
+      		$Y=$x[0][reference_details];
+		foreach($Y as $y)
+      		{
+        		array_push($array1,$y[refered_user]);
+      		}
+        }
+        //echo $f;
+	$array2=array();
+	$x=get_user_meta ($current_user->ID,'points_details');
+      	$Y=$x[0][reference_details];
+	foreach($Y as $y)
+      	{
+        	array_push($array2,$y[refered_user]);
+      	}
+	foreach($array1 as $a)
+	{
+		$f=1;
+		display($a);
+	}
+	foreach($array2 as $a)
+	{
+		$f=1;
+		display($a);
+	}
+       // echo $f;
+	if($f==0)
+	{
+	      echo "You don’t see your doctor yet? No worries, just use the referral link <a 
+              href='https://www.thehealthlync.com/my-account/points/'>here</a> to invite your doctor to 
+              join the platform. It’s completely free for the doctor to join!" ;
+	}
+	
+
+
+}
+
+
+?>
